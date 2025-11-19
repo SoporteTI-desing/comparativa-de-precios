@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Comparativo de Medicamentos - Interactivo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --accent: #22c55e;
+      --accent-soft: rgba(34, 197, 94, 0.1);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #1f2937;
+      --danger: #f97373;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top, #1e293b, #020617);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 1400px;
+      margin: 16px auto 40px;
+      padding: 16px;
+    }
+
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .title-block h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      letter-spacing: 0.03em;
+    }
+
+    .title-block p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: rgba(15, 118, 110, 0.25);
+      border: 1px solid rgba(34, 197, 94, 0.5);
+      font-size: 0.8rem;
+    }
+
+    .pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.35);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 1024px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: linear-gradient(135deg, rgba(15,23,42,0.98), rgba(15,23,42,0.98));
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.65);
+      backdrop-filter: blur(18px);
+    }
+
+    .card + .card {
+      margin-top: 8px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .card-header h2 {
+      margin: 0;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .card-header span.badge {
+      font-size: 0.7rem;
+      border-radius: 999px;
+      padding: 2px 8px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: var(--muted);
+    }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 6px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(15,23,42,0.9);
+      color: var(--text);
+      font-size: 0.8rem;
+      outline: none;
+    }
+
+    input::placeholder {
+      color: #4b5563;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.15);
+    }
+
+    .filters-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .filters-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .filters-row-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    @media (max-width: 600px) {
+      .filters-row,
+      .filters-row-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .inline {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.7rem;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .chip {
+      font-size: 0.7rem;
+      border-radius: 999px;
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .chip.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: #bbf7d0;
+    }
+
+    .file-zone {
+      border-radius: 16px;
+      border: 1px dashed rgba(148,163,184,0.5);
+      padding: 10px;
+      text-align: left;
+      background: rgba(15,23,42,0.7);
+      font-size: 0.8rem;
+    }
+
+    .file-zone strong {
+      color: var(--accent);
+    }
+
+    .file-zone small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.7rem;
+    }
+
+    .file-input-row {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      background: var(--accent-soft);
+      color: #bbf7d0;
+      font-size: 0.8rem;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .btn.secondary {
+      border-color: rgba(148,163,184,0.6);
+      background: rgba(15,23,42,0.8);
+      color: var(--muted);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status {
+      margin-top: 6px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .status.ok {
+      color: #bbf7d0;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    /* Table */
+    .table-wrapper {
+      position: relative;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: radial-gradient(circle at top left, rgba(56,189,248,0.15), transparent 60%),
+                  radial-gradient(circle at bottom right, rgba(34,197,94,0.18), transparent 55%),
+                  #020617;
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .table-header h2 {
+      margin: 0;
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .table-meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .table-meta span.highlight {
+      color: #a5b4fc;
+    }
+
+    .table-scroll {
+      max-height: 75vh;
+      overflow: auto;
+      border-radius: 12px;
+      border: 1px solid rgba(15,23,42,0.7);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+      background: rgba(15,23,42,0.96);
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: linear-gradient(to right, #020617, #020617);
+      box-shadow: 0 2px 0 rgba(15,23,42,0.9);
+    }
+
+    th, td {
+      padding: 6px 9px;
+      border-bottom: 1px solid rgba(31,41,55,0.7);
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      font-weight: 500;
+      font-size: 0.7rem;
+      color: #9ca3af;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    th.sortable::after {
+      content: "⇅";
+      font-size: 0.6rem;
+      opacity: 0.4;
+      margin-left: 4px;
+    }
+
+    th.sorted-asc::after {
+      content: "▲";
+      opacity: 0.8;
+    }
+
+    th.sorted-desc::after {
+      content: "▼";
+      opacity: 0.8;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(15,23,42,0.95);
+    }
+
+    tbody tr:hover {
+      background: rgba(34,197,94,0.08);
+    }
+
+    td.numeric {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    td.badge-cell span {
+      border-radius: 999px;
+      padding: 2px 7px;
+      font-size: 0.65rem;
+      border: 1px solid rgba(34,197,94,0.7);
+      color: #bbf7d0;
+      background: var(--accent-soft);
+    }
+
+    td.note-cell {
+      max-width: 180px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pill-mini {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 1px 6px;
+      border: 1px solid rgba(148,163,184,0.4);
+      color: var(--muted);
+      font-size: 0.65rem;
+      gap: 4px;
+    }
+
+    .pill-mini-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(34,197,94,0.7);
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+  </style>
+
+  <!-- SheetJS para leer Excels en el navegador -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="title-block">
+        <h1>Comparativo de Medicamentos SANARÉ</h1>
+        <p>Explora precios por proveedor, laboratorio y medicamento. Actualiza en vivo con nuevos listados en Excel.</p>
+      </div>
+      <div class="pill">
+        <div class="pill-dot"></div>
+        <span>Motor de precios en tiempo real</span>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- LADO IZQUIERDO: FILTROS + CARGA DE LISTAS -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <h2>Filtros principales</h2>
+            <span class="badge">Vista del comparativo</span>
+          </div>
+          <div class="filters-grid">
+            <div>
+              <label for="searchText">Buscar medicamento / descripción</label>
+              <input id="searchText" type="text" placeholder="Ej. CORDARONE, AMIODARONA, 150 MG..." />
+            </div>
+            <div class="filters-row">
+              <div>
+                <label for="labFilter">Laboratorio</label>
+                <select id="labFilter">
+                  <option value="">Todos</option>
+                </select>
+              </div>
+              <div>
+                <label for="providerFilter">Proveedor</label>
+                <select id="providerFilter">
+                  <option value="">Todos</option>
+                </select>
+              </div>
+            </div>
+            <div class="filters-row-3">
+              <div>
+                <label for="priceMin">Precio mínimo</label>
+                <input id="priceMin" type="number" step="0.01" placeholder="Desde" />
+              </div>
+              <div>
+                <label for="priceMax">Precio máximo</label>
+                <input id="priceMax" type="number" step="0.01" placeholder="Hasta" />
+              </div>
+              <div>
+                <label>&nbsp;</label>
+                <button id="clearFilters" class="btn secondary" type="button">Limpiar filtros</button>
+              </div>
+            </div>
+            <p class="muted">
+              Tip: si no eliges proveedor para el filtro de precio se utilizará el <strong>precio mínimo</strong> calculado entre todos.
+            </p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>Actualización de precios</h2>
+            <span class="badge">Lectura desde Excel</span>
+          </div>
+          <div class="file-zone">
+            <span><strong>1.</strong> Selecciona el Excel de nuevos precios (primer hoja).</span>
+            <small>La herramienta intentará detectar automáticamente la columna de código (EAN / CÓDIGO DE BARRAS / SKU) y la columna de precio (PRECIO / PMP / PRECIO SUGERIDO).</small>
+
+            <div class="file-input-row">
+              <div>
+                <label for="fileInput">Archivo Excel</label>
+                <input id="fileInput" type="file" accept=".xlsx,.xls" />
+              </div>
+              <div>
+                <label for="listProviderName">Nombre del proveedor / lista</label>
+                <input id="listProviderName" type="text" placeholder="Ej. MEDPHARMA OCT-2025" />
+              </div>
+            </div>
+
+            <small>
+              <strong>2.</strong> Al cargar, se actualizarán en la tabla los precios encontrados por EAN.
+            </small>
+
+            <button id="applyUpload" class="btn" type="button" disabled>
+              Aplicar nueva lista de precios
+            </button>
+            <div id="uploadStatus" class="status"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>Vista rápida</h2>
+            <span class="badge">Resumen</span>
+          </div>
+          <div class="legend">
+            <span><span class="legend-dot"></span> Mejor precio entre proveedores (MIN)</span>
+            <span><span class="pill-mini-dot"></span> Proveedor ganador por medicamento</span>
+          </div>
+          <p class="muted" style="margin-top:6px;">
+            Cada vez que cargas una nueva lista, se recalcula el mejor precio y el proveedor ganador. Esta vista sólo es un resumen visual, la tabla contiene todo el detalle.
+          </p>
+        </div>
+      </div>
+
+      <!-- LADO DERECHO: TABLA PRINCIPAL -->
+      <div class="table-wrapper">
+        <div class="table-header">
+          <h2>Comparativo principal</h2>
+          <div class="table-meta">
+            <div>Registros visibles: <span id="visibleCount" class="highlight">0</span> / <span id="totalCount">0</span></div>
+            <div>Proveedor de referencia para precio: <span id="priceProviderLabel" class="highlight">MIN global</span></div>
+          </div>
+          <button id="downloadExcelBtn" class="btn secondary" type="button">Descargar Excel</button>
+        </div>
+
+        <div class="table-scroll">
+          <table id="dataTable">
+            <thead>
+              <tr id="dataHeaderRow">
+                <th class="sortable" data-key="NOMBRE COMERCIAL">Medicamento</th>
+                <th class="sortable" data-key="DESCRIPCIÓN">Descripción</th>
+                <th class="sortable" data-key="LABORATORIO">Laboratorio</th>
+                <th class="sortable" data-key="EAN">EAN</th>
+                <th class="sortable" data-key="CATEGORIA">Categoría</th>
+                <th class="sortable" data-key="precioRef">Precio ref.</th>
+                <th class="sortable" data-key="proveedorGanador">Proveedor</th>
+                <th>MIN</th>
+                <!-- columnas dinámicas de proveedores se insertan aquí -->
+                <th class="note-col-header">NOTA</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Firebase (CDN)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBjJ0C13bvIqVvB5i3T2djV2v3f-WRVNAE",
+      authDomain: "comparativo-precios.firebaseapp.com",
+      projectId: "comparativo-precios",
+      storageBucket: "comparativo-precios.firebasestorage.app",
+      messagingSenderId: "531079648080",
+      appId: "1:531079648080:web:9711f5f88b3e9ca0355255"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Cambia a false si quieres usar solo el JSON local
+    const USE_FIREBASE = true;
+
+    // Configuración básica
+    const PROVIDERS = ["DEMSA", "PROBEMEDIC", "NADRO", "SALUCOM", "UNIMEDICAL", "DROGAS Y ENSERES", "SALUD Y VIDA CONDESA", "MEDPHARMA", "RENAVITA", "FARMACIAS VIDA", "TIVASANI", "PHARMATYCSA", "MCC", "PIXAN"];
+    const BASE_URL = "."; // mismo folder
+    // Lista dinámica de proveedores a mostrar en la tabla
+    let displayProviders = [...PROVIDERS];
+
+
+    let rawData = [];
+    let workingData = [];
+    let indexByEAN = new Map();
+    let uploadBuffer = null;
+
+    function renderProviderHeaders() {
+      const headerRow = document.querySelector("#dataTable thead tr");
+      if (!headerRow) return;
+      const notaTh = headerRow.querySelector("th.note-col-header") || headerRow.lastElementChild;
+
+      // Eliminar encabezados previos de proveedores
+      Array.from(headerRow.querySelectorAll("th.provider-col-header")).forEach((th) => th.remove());
+
+      // Insertar nuevos encabezados de proveedores antes de NOTA
+      displayProviders.forEach((provName) => {
+        const th = document.createElement("th");
+        th.className = "provider-col-header";
+        th.textContent = provName;
+        headerRow.insertBefore(th, notaTh);
+      });
+    }
+
+
+    let currentSortKey = "NOMBRE COMERCIAL";
+    let currentSortDir = "asc";
+
+    const $ = (id) => document.getElementById(id);
+
+    async function loadData() {
+      try {
+        let data = [];
+
+        if (USE_FIREBASE) {
+          console.log("[Firebase] Intentando cargar datos desde Firestore...");
+          const snap = await getDocs(collection(db, "comparativo"));
+          data = snap.docs.map(doc => doc.data());
+          console.log(`[Firebase] Documentos recibidos: ${data.length}`);
+        }
+
+        // Si Firebase no trae nada o está desactivado, usamos el JSON local
+        if (!USE_FIREBASE || !Array.isArray(data) || data.length === 0) {
+          console.log("[JSON] Cargando datos desde comparativoData.json...");
+          const res = await fetch(BASE_URL + "/comparativoData.json");
+          data = await res.json();
+          console.log(`[JSON] Registros cargados: ${data.length}`);
+        }
+
+        rawData = data;
+        buildIndex();
+        initFilters();
+        applyFiltersAndRender();
+      } catch (err) {
+        console.error("Error cargando datos desde Firebase/JSON", err);
+        alert("No se pudieron cargar los datos desde Firebase o desde el archivo comparativoData.json. Revisa la consola para más detalles.");
+      }
+    }
+
+    function buildIndex() {
+      indexByEAN.clear();
+      rawData.forEach((row) => {
+        const ean = row["EAN"];
+        if (ean != null && ean !== "" && !indexByEAN.has(String(ean))) {
+          indexByEAN.set(String(ean).trim(), row);
+        }
+      });
+      $("totalCount").textContent = rawData.length.toString();
+    }
+
+    function initFilters() {
+      // Lab options
+      const labs = Array.from(
+        new Set(
+          rawData
+            .map((r) => r["LABORATORIO"])
+            .filter((v) => v != null && String(v).trim() !== "")
+        )
+      ).sort((a, b) => String(a).localeCompare(String(b)));
+      const labSelect = $("labFilter");
+      labs.forEach((lab) => {
+        const opt = document.createElement("option");
+        opt.value = lab;
+        opt.textContent = lab;
+        labSelect.appendChild(opt);
+      });
+
+      // Provider select
+      const providerSelect = $("providerFilter");
+      displayProviders.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p;
+        opt.textContent = p;
+        providerSelect.appendChild(opt);
+      });
+
+      // Renderizar encabezados de proveedores en la tabla
+      renderProviderHeaders();
+
+      // Eventos
+      $("searchText").addEventListener("input", debounce(applyFiltersAndRender, 250));
+      $("labFilter").addEventListener("change", applyFiltersAndRender);
+      $("providerFilter").addEventListener("change", () => {
+        const prov = $("providerFilter").value;
+        $("priceProviderLabel").textContent = prov || "MIN global";
+        applyFiltersAndRender();
+      });
+      $("priceMin").addEventListener("input", debounce(applyFiltersAndRender, 250));
+      $("priceMax").addEventListener("input", debounce(applyFiltersAndRender, 250));
+      $("clearFilters").addEventListener("click", () => {
+        $("searchText").value = "";
+        $("labFilter").value = "";
+        $("providerFilter").value = "";
+        $("priceMin").value = "";
+        $("priceMax").value = "";
+        $("priceProviderLabel").textContent = "MIN global";
+        applyFiltersAndRender();
+      });
+
+      // Sorting
+      const headerCells = document.querySelectorAll("#dataTable thead th.sortable");
+      headerCells.forEach((th) => {
+        th.addEventListener("click", () => {
+          const key = th.getAttribute("data-key");
+          if (currentSortKey === key) {
+            currentSortDir = currentSortDir === "asc" ? "desc" : "asc";
+          } else {
+            currentSortKey = key;
+            currentSortDir = "asc";
+          }
+          headerCells.forEach((h) => h.classList.remove("sorted-asc", "sorted-desc"));
+          th.classList.add(currentSortDir === "asc" ? "sorted-asc" : "sorted-desc");
+          applyFiltersAndRender();
+        });
+      });
+
+      // Upload handling
+      $("fileInput").addEventListener("change", handleFileSelection);
+      $("applyUpload").addEventListener("click", applyUploadToData);
+    }
+
+    function debounce(fn, delay) {
+      let t;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), delay);
+      };
+    }
+
+    function applyFiltersAndRender() {
+      const term = $("searchText").value.trim().toLowerCase();
+      const lab = $("labFilter").value;
+      const prov = $("providerFilter").value;
+      const priceMin = parseFloat($("priceMin").value);
+      const priceMax = parseFloat($("priceMax").value);
+
+      workingData = rawData.filter((row) => {
+        // texto
+        if (term) {
+          const hayTexto =
+            (row["NOMBRE COMERCIAL"] && String(row["NOMBRE COMERCIAL"]).toLowerCase().includes(term)) ||
+            (row["DESCRIPCIÓN"] && String(row["DESCRIPCIÓN"]).toLowerCase().includes(term)) ||
+            (row["EAN"] && String(row["EAN"]).toLowerCase().includes(term));
+          if (!hayTexto) return false;
+        }
+
+        // laboratorio
+        if (lab && row["LABORATORIO"] !== lab) return false;
+
+        // proveedor: si se selecciona, solo mostrar filas donde ese proveedor tenga precio válido (>0)
+        if (prov) {
+          const valProv = row[prov];
+          const numProv = typeof valProv === "number" ? valProv : parseFloat(valProv);
+          if (isNaN(numProv) || numProv <= 0) return false;
+        }
+
+        // precio de referencia (para filtro)
+        const priceRef = getPriceRef(row, prov);
+        if (!isNaN(priceMin) && (isNaN(priceRef) || priceRef < priceMin)) return false;
+        if (!isNaN(priceMax) && (isNaN(priceRef) || priceRef > priceMax)) return false;
+
+        return true;
+      });
+
+      // Sort
+      workingData.sort((a, b) => compareRows(a, b, currentSortKey, currentSortDir, prov));
+
+      // Render
+      renderTable(workingData, prov);
+
+      $("visibleCount").textContent = workingData.length.toString();
+    }
+
+    function getPriceRef(row, prov) {
+      if (prov) {
+        const val = row[prov];
+        return typeof val === "number" ? val : parseFloat(val);
+      }
+      // MIN global (columna MIN si existe, si no, mins calculado)
+      let minVal = null;
+      if (row["MIN"] != null) {
+        const v = typeof row["MIN"] === "number" ? row["MIN"] : parseFloat(row["MIN"]);
+        if (!isNaN(v)) minVal = v;
+      }
+      if (minVal == null) {
+        PROVIDERS.forEach((p) => {
+          const v = row[p];
+          if (v != null && v !== "" && !isNaN(parseFloat(v))) {
+            const n = parseFloat(v);
+            if (minVal == null || n < minVal) minVal = n;
+          }
+        });
+      }
+      return minVal;
+    }
+
+    function getBestProvider(row) {
+      let bestProv = null;
+      let bestPrice = null;
+      PROVIDERS.forEach((p) => {
+        const v = row[p];
+        if (v != null && v !== "" && !isNaN(parseFloat(v))) {
+          const n = parseFloat(v);
+          // Ignorar precios en 0 para la sugerencia
+          if (n > 0 && (bestPrice == null || n < bestPrice)) {
+            bestPrice = n;
+            bestProv = p;
+          }
+        }
+      });
+      return { provider: bestProv, price: bestPrice };
+    }
+
+    function getTopProviders(row, maxCount = 3) {
+      const items = [];
+      PROVIDERS.forEach((p) => {
+        const v = row[p];
+        if (v != null && v !== "" && !isNaN(parseFloat(v))) {
+          const n = parseFloat(v);
+          // ignorar 0
+          if (n > 0) {
+            items.push({ provider: p, price: n });
+          }
+        }
+      });
+      items.sort((a, b) => a.price - b.price);
+      return items.slice(0, maxCount);
+    }
+
+    function compareRows(a, b, key, dir, prov) {
+      const factor = dir === "asc" ? 1 : -1;
+      let va, vb;
+
+      if (key === "precioRef") {
+        va = getPriceRef(a, prov);
+        vb = getPriceRef(b, prov);
+      } else if (key === "proveedorGanador") {
+        va = getBestProvider(a).provider || "";
+        vb = getBestProvider(b).provider || "";
+      } else {
+        va = a[key];
+        vb = b[key];
+      }
+
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1 * factor;
+      if (vb == null) return -1 * factor;
+
+      // numéricos
+      if (typeof va === "number" || typeof vb === "number") {
+        const na = parseFloat(va);
+        const nb = parseFloat(vb);
+        if (isNaN(na) && isNaN(nb)) return 0;
+        if (isNaN(na)) return 1 * factor;
+        if (isNaN(nb)) return -1 * factor;
+        if (na < nb) return -1 * factor;
+        if (na > nb) return 1 * factor;
+        return 0;
+      }
+
+      // texto
+      const sa = String(va).toLowerCase();
+      const sb = String(vb).toLowerCase();
+      if (sa < sb) return -1 * factor;
+      if (sa > sb) return 1 * factor;
+      return 0;
+    }
+
+    function renderTable(rows, prov) {
+      const tbody = document.querySelector("#dataTable tbody");
+      const frag = document.createDocumentFragment();
+
+      rows.forEach((row) => {
+        const tr = document.createElement("tr");
+        const best = getBestProvider(row);
+        const priceRef = getPriceRef(row, prov);
+
+        const baseCells = [
+          String(row["NOMBRE COMERCIAL"] || ""),
+          String(row["DESCRIPCIÓN"] || ""),
+          String(row["LABORATORIO"] || ""),
+          String(row["EAN"] || ""),
+          String(row["CATEGORIA"] || ""),
+          priceRef != null && !isNaN(priceRef) ? formatMoney(priceRef) : "",
+          (function () {
+            const tops = getTopProviders(row, 3);
+            if (!tops.length) return "";
+            return tops
+              .map((t) => '<span class="pill-mini"><span class="pill-mini-dot"></span>' + t.provider + "</span>")
+              .join(" ");
+          })(),
+          row["MIN"] != null && row["MIN"] !== "" ? formatMoney(row["MIN"]) : "",
+        ];
+
+        const providerCells = displayProviders.map((provName) => row[provName]);
+        const noteCell = String(row["NOTA"] || "");
+        const cells = baseCells.concat(providerCells, [noteCell]);
+
+        const numericIdx = new Set();
+        // Índices numéricos base: precio ref (5) y MIN (7)
+        numericIdx.add(5);
+        numericIdx.add(7);
+        const startProvIdx = baseCells.length;
+        for (let i = 0; i < providerCells.length; i++) {
+          numericIdx.add(startProvIdx + i);
+        }
+        const noteIdx = baseCells.length + providerCells.length;
+
+        cells.forEach((val, idxCell) => {
+          const td = document.createElement("td");
+          if (idxCell === 6 && val) {
+            td.className = "badge-cell";
+            td.innerHTML = val;
+          } else if (idxCell === noteIdx) {
+            td.className = "note-cell";
+            td.textContent = val;
+          } else if (numericIdx.has(idxCell)) {
+            td.className = "numeric";
+            if (typeof val === "number") {
+              td.textContent = formatMoney(val);
+            } else if (val != null && val !== "" && !isNaN(parseFloat(val))) {
+              td.textContent = formatMoney(parseFloat(val));
+            } else {
+              td.textContent = "";
+            }
+          } else {
+            td.innerHTML = val;
+          }
+          tr.appendChild(td);
+        });
+
+        frag.appendChild(tr);
+      });
+
+      tbody.innerHTML = "";
+      tbody.appendChild(frag);
+      currentRenderedRows = rows.slice();
+    }
+
+
+let currentRenderedRows = [];
+
+    function downloadExcel() {
+      const rows = currentRenderedRows.length ? currentRenderedRows : (workingData.length ? workingData : rawData);
+      if (!rows || !rows.length) {
+        alert("No hay datos para exportar.");
+        return;
+      }
+      const prov = $("providerFilter").value;
+
+      const header = [
+        "Medicamento",
+        "Descripción",
+        "Laboratorio",
+        "EAN",
+        "Categoría",
+        "Precio ref.",
+        "Proveedor sugerido",
+        "MIN",
+        ...displayProviders,
+        "NOTA"
+      ];
+
+      const sep = ",";
+      const csvRows = [];
+      csvRows.push(header.join(sep));
+
+      rows.forEach((row) => {
+        const best = getBestProvider(row);
+        const priceRef = getPriceRef(row, prov);
+        const values = [
+          row["NOMBRE COMERCIAL"] ?? "",
+          row["DESCRIPCIÓN"] ?? "",
+          row["LABORATORIO"] ?? "",
+          row["EAN"] ?? "",
+          row["CATEGORIA"] ?? "",
+          priceRef != null && !isNaN(priceRef) ? priceRef : "",
+          best.provider || "",
+          row["MIN"] ?? "",
+          ...displayProviders.map((p) => row[p] ?? ""),
+          row["NOTA"] ?? ""
+        ];
+
+        const line = values
+          .map((val) => {
+            const s = String(val ?? "").replace(/"/g, '""');
+            return `"${s}"`;
+          })
+          .join(sep);
+        csvRows.push(line);
+      });
+
+      const csvContent = "\uFEFF" + csvRows.join("\r\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const now = new Date();
+      const dateStr = now.toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `comparativo_sanare_${dateStr}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function formatMoney(v) {
+      if (v == null || isNaN(v)) return "";
+      return new Intl.NumberFormat("es-MX", {
+        style: "currency",
+        currency: "MXN",
+        maximumFractionDigits: 2,
+      }).format(v);
+    }
+
+    // === Manejo de upload Excel ===
+    function handleFileSelection(evt) {
+      const file = evt.target.files[0];
+      $("uploadStatus").textContent = "";
+      $("uploadStatus").className = "status";
+      uploadBuffer = null;
+      $("applyUpload").disabled = true;
+
+      if (!file) return;
+
+      // Tomar el nombre del archivo como nombre sugerido de proveedor
+      const baseName = file.name ? file.name.replace(/\.[^/.]+$/, "") : "";
+      if (!$("listProviderName").value.trim() && baseName) {
+        $("listProviderName").value = baseName;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const wb = XLSX.read(data, { type: "array" });
+          const wsName = wb.SheetNames[0];
+          const ws = wb.Sheets[wsName];
+          const json = XLSX.utils.sheet_to_json(ws, { defval: null });
+
+          if (!json.length) throw new Error("Hoja vacía");
+
+          const headers = Object.keys(json[0]);
+          const codeHeader = guessHeader(headers, [
+            "ean",
+            "código de barras",
+            "codigo de barras",
+            "codigo",
+            "código",
+            "sku",
+          ]);
+          const priceHeader = guessHeader(headers, [
+            "precio sugerido",
+            "precio",
+            "pmp",
+            "importe",
+            "neto",
+            "unitario",
+            "pu",
+          ]);
+const descHeader = guessHeader(headers, [
+  "descripcion",
+  "descripción",
+  "nombre",
+  "producto",
+  "articulo",
+  "artículo",
+]);
+
+
+          if (!codeHeader || !priceHeader) {
+            $("uploadStatus").textContent =
+              "No pude detectar claramente las columnas de EAN y Precio. Por favor ajusta los encabezados (EAN / CODIGO / SKU y PRECIO / PMP) y vuelve a intentar.";
+            $("uploadStatus").classList.add("error");
+            return;
+          }
+
+          uploadBuffer = { rows: json, codeHeader, priceHeader, descHeader, providerNameFromFile: baseName };
+          $("applyUpload").disabled = false;
+          $("uploadStatus").textContent =
+            "Archivo listo. Código: '" +
+            codeHeader +
+            "', Precio: '" +
+            priceHeader +
+            "'. Pulsa 'Aplicar nueva lista de precios'.";
+          $("uploadStatus").classList.add("ok");
+        } catch (err) {
+          console.error("Error leyendo Excel:", err);
+          $("uploadStatus").textContent = "Ocurrió un error leyendo el archivo.";
+          $("uploadStatus").classList.add("error");
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function guessHeader(headers, candidates) {
+      const lower = headers.map((h) => String(h || "").toLowerCase().trim());
+      for (const cand of candidates) {
+        const idx = lower.findIndex((h) => h.includes(cand));
+        if (idx !== -1) return headers[idx];
+      }
+      return null;
+    }
+
+    async function applyUploadToData() {
+      if (!uploadBuffer) return;
+      const providerNameInput = $("listProviderName").value.trim();
+      // Si no se capturó manualmente, usamos el nombre del archivo como proveedor
+      let providerName =
+        providerNameInput || (uploadBuffer.providerNameFromFile || "LISTA NUEVA");
+
+      // Normalizar y buscar un proveedor existente ignorando mayúsculas/minúsculas
+      const existing = PROVIDERS.find(
+        (p) => p.toLowerCase() === providerName.toLowerCase()
+      );
+      if (existing) {
+        providerName = existing;
+      }
+
+      let updated = 0;
+      let added = 0;
+
+      if (!existing) {
+        PROVIDERS.push(providerName);
+        displayProviders.push(providerName);
+
+        // Agregar nueva opción al filtro de proveedor
+        const providerSelect = $("providerFilter");
+        if (providerSelect) {
+          const opt = document.createElement("option");
+          opt.value = providerName;
+          opt.textContent = providerName;
+          providerSelect.appendChild(opt);
+        }
+
+        // Regenerar encabezados de proveedores
+        renderProviderHeaders();
+      }
+
+      const { rows, codeHeader, priceHeader, descHeader } = uploadBuffer;
+      const baseExample = rawData[0] || {};
+      let maxId = rawData.reduce((max, r) => {
+        const v = typeof r.ID === "number" ? r.ID : parseFloat(r.ID);
+        return !isNaN(v) && v > max ? v : max;
+      }, 0);
+
+      // 🔹 Acumularemos las filas que deben sincronizarse a Firestore
+      const rowsToSync = [];
+
+      rows.forEach((r) => {
+        const code = r[codeHeader];
+        const price = r[priceHeader];
+        if (code == null || price == null || price === "") return;
+        const eanKey = String(code).trim();
+        if (!eanKey) return;
+        let row = indexByEAN.get(eanKey);
+        if (!row) {
+          const newRow = {};
+          const keys = Object.keys(baseExample);
+          keys.forEach((key) => {
+            if (key === "ID") {
+              newRow[key] = ++maxId;
+            } else if (key === "EAN") {
+              newRow[key] = eanKey;
+            } else if (key === "DESCRIPCIÓN" && descHeader) {
+              const descVal = r[descHeader];
+              newRow[key] = descVal != null ? String(descVal) : "";
+            } else if (PROVIDERS.includes(key) || key === "MIN") {
+              newRow[key] = null;
+            } else {
+              newRow[key] = null;
+            }
+          });
+          rawData.push(newRow);
+          indexByEAN.set(eanKey, newRow);
+          row = newRow;
+          added++;
+        }
+
+        const priceNum = parseFloat(price);
+        if (isNaN(priceNum)) return;
+
+        row[providerName] = priceNum;
+        updated++;
+
+        if (USE_FIREBASE) {
+          rowsToSync.push(row);
+        }
+      });
+
+      if (updated > 0) {
+        // Reconstruir índice (incluyendo nuevos códigos) y contador total
+        buildIndex();
+
+        // Recalcular MIN cuando corresponda
+        rawData.forEach((row) => {
+          let minVal = null;
+          PROVIDERS.forEach((p) => {
+            const v = row[p];
+            if (v != null && v !== "" && !isNaN(parseFloat(v))) {
+              const n = parseFloat(v);
+              if (minVal == null || n < minVal) minVal = n;
+            }
+          });
+          if (minVal != null) row["MIN"] = minVal;
+        });
+
+        // 🔹 Sincronizar cambios a Firestore (solo los EAN afectados)
+        if (USE_FIREBASE && rowsToSync.length > 0) {
+          try {
+            const uniqueToSync = Array.from(new Set(rowsToSync.map(r => r.EAN || r["EAN"]))).map(ean => {
+              return rawData.find(r => (r.EAN || r["EAN"]) === ean);
+            }).filter(Boolean);
+
+            const writes = uniqueToSync.map((row) => {
+              const idVal = row.ID != null ? row.ID : (row.EAN || row["EAN"]);
+              const docId = String(idVal);
+              return setDoc(doc(db, "comparativo", docId), row, { merge: true });
+            });
+            await Promise.all(writes);
+            console.log("[Firebase] Sincronizados", writes.length, "documentos actualizados desde Excel.");
+          } catch (syncErr) {
+            console.error("[Firebase] Error al sincronizar cambios desde Excel:", syncErr);
+          }
+        }
+
+        const parts = [];
+        parts.push("Se actualizaron " + updated + " medicamentos");
+        if (added > 0) {
+          parts.push("se agregaron " + added + " nuevos códigos");
+        }
+        $("uploadStatus").textContent =
+          parts.join(" y ") + " con la lista '" + providerName + "'.";
+        $("uploadStatus").classList.add("ok");
+
+        applyFiltersAndRender();
+      } else {
+        $("uploadStatus").textContent =
+          "No se encontraron coincidencias de EAN entre la lista y el comparativo.";
+        $("uploadStatus").classList.add("error");
+      }
+    }
+
+    // Inicializar
+    document.addEventListener("DOMContentLoaded", () => {
+      const btnDownload = $("downloadExcelBtn");
+      if (btnDownload) {
+        btnDownload.addEventListener("click", downloadExcel);
+      }
+      loadData();
+    });
+  </script>
+</body>
+</html>

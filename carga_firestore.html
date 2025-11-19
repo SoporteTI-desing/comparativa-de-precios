@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cargar comparativoData.json a Firestore</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    button {
+      padding: 0.75rem 1.5rem;
+      border-radius: 9999px;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    #log {
+      width: 100%;
+      max-width: 900px;
+      min-height: 300px;
+      background: #020617;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      border: 1px solid #1f2937;
+      white-space: pre-wrap;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.8rem;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Cargar comparativoData.json a Firestore</h1>
+  <p>Haz clic una sola vez y espera a que termine.</p>
+  <button id="uploadBtn">Subir datos a Firestore</button>
+  <pre id="log"></pre>
+
+  <script type="module">
+    // Firebase SDK desde CDN (misma versión que en el index)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBjJ0C13bvIqVvB5i3T2djV2v3f-WRVNAE",
+      authDomain: "comparativo-precios.firebaseapp.com",
+      projectId: "comparativo-precios",
+      storageBucket: "comparativo-precios.firebasestorage.app",
+      messagingSenderId: "531079648080",
+      appId: "1:531079648080:web:9711f5f88b3e9ca0355255"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const logEl = document.getElementById("log");
+    const log = (msg) => {
+      console.log(msg);
+      logEl.textContent += msg + "\n";
+      logEl.scrollTop = logEl.scrollHeight;
+    };
+
+    async function subirDatos() {
+      try {
+        log("Leyendo archivo comparativoData.json...");
+        const res = await fetch("./comparativoData.json");
+        if (!res.ok) {
+          throw new Error("No se pudo leer comparativoData.json (¿está en la misma carpeta?).");
+        }
+
+        const data = await res.json();
+        if (!Array.isArray(data)) {
+          throw new Error("El JSON no es un arreglo.");
+        }
+
+        log(`Registros totales en JSON: ${data.length}`);
+
+        const chunkSize = 200;
+
+        for (let i = 0; i < data.length; i += chunkSize) {
+          const chunk = data.slice(i, i + chunkSize);
+
+          const writes = chunk.map((item, idx) => {
+            let docId =
+              item.ID !== undefined && item.ID !== null && item.ID !== ""
+                ? String(item.ID)
+                : item.EAN !== undefined && item.EAN !== null && item.EAN !== ""
+                ? String(item.EAN)
+                : String(i + idx);
+
+            return setDoc(
+              doc(db, "comparativo", docId),
+              item,
+              { merge: true }
+            );
+          });
+
+          await Promise.all(writes);
+          log(`Subidos ${Math.min(i + chunkSize, data.length)} / ${data.length} registros...`);
+        }
+
+        log("✅ Carga terminada. Revisa Firestore en la colección 'comparativo'.");
+      } catch (err) {
+        console.error(err);
+        log("❌ Error: " + err.message);
+      }
+    }
+
+    document.getElementById("uploadBtn").addEventListener("click", () => {
+      if (confirm("Esto subirá/actualizará todos los registros en la colección 'comparativo'. ¿Continuar?")) {
+        subirDatos();
+      }
+    });
+  </script>
+</body>
+</html>
